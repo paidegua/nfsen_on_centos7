@@ -191,11 +191,11 @@ cd /data/nfsen/bin/
 
 1. Use tcpdump and verify that flows are being received on the specified port.
 	LIST NICs:
-		#ip link show
-
-		#tcpdump -i eno16777984 port 9030
+	
+	ip link show
+	tcpdump -i eno16777984 port 9030
 		
-		##Make sure that you see traffic on this port from required host.
+	Make sure that you see traffic on this port from required host.
 
 2. With nfdump you can read flow collection files from command line
 
@@ -219,7 +219,8 @@ cd /opt/
 sudo wget https://sourceforge.net/projects/flowdoh/files/FlowDoh_1.0.2.tar.gz
 sudo tar -zxvf FlowDoh_1.0.2.tar.gz
 
-!Backend: (/data/nfsen/plugins/)
+1. Backend: (/data/nfsen/plugins/)
+
 	cd /opt/flowdoh/backend/
 	cp -avr flowdoh/ /data/nfsen/plugins/
 	cp flowdoh.pm /data/nfsen/plugins/
@@ -229,7 +230,8 @@ sudo tar -zxvf FlowDoh_1.0.2.tar.gz
 	chmod 777 flowdoh
 	chmod 777 flowdoh.pm
 
-!FrontEnd: (/var/www/html/nfsen/plugins/)
+2. FrontEnd: (/var/www/html/nfsen/plugins/)
+
 	cd /opt/flowdoh/frontend/
 	cp flowdoh.php /var/www/html/nfsen/plugins/
 	cp -avr flowdoh/ /var/www/html/nfsen/plugins/
