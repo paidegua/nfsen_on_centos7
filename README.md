@@ -1,70 +1,72 @@
-## NFSEN CENTOS GENERAL SETUP:
+### NFSEN CENTOS GENERAL SETUP:
+## Start with a basic minimal installation of CentOS 7
 
-#Start with a basic minimal installation of CentOS 7
 yum update -y 
 
-vi /etc/selinux/config   	#change "SELINUX=enforcing" to --> "SELINUX=disabled"
+vi /etc/selinux/config   	
+
+#change "SELINUX=enforcing" to --> "SELINUX=disabled"
 
 reboot  					#to apply SELINUX changes
 
 sestatus					#to VERIFY status; it should stay: "SELinux status: disabled"
 
-##Stop iptables firewall:
+# Stop iptables firewall:
 
 systemctl stop firewalld
 systemctl disable firewalld
 
-##verify:
+# verify:
 
 firewall-cmd --state		#to VERIFY status; it should stay: "not running"
 
------START NFSEN APPLICATION SETUP--------
+### -----START NFSEN APPLICATION SETUP--------
 
-## We will need to install a number of packages for CentOS 7
+# We will need to install a number of packages for CentOS 7
 
 yum install -y httpd php wget gcc make rrdtool-devel rrdtool-perl perl-MailTools perl-Socket6 flex byacc perl-Sys-Syslog perl-Data-Dumper autoconf automake apache php perl-MailTools rrdtool-perl perl-Socket6 perl-Sys-Syslog.x86_64 policycoreutils-python tcpdump
 
 echo "date.timezone = America/Denver" > /etc/php.d/timezone.ini
 yum update -y 
 
-## Create user account and add it to proper group
+# Create user account and add it to proper group
 
 useradd netflow
 usermod -a -G apache netflow
 
-## Create directories which we will specify later in configuration file
+# Create directories which we will specify later in configuration file
 
 mkdir -p /data/nfsen
 mkdir -p /var/www/html/nfsen
 
-## Download latest nfdump and nfsen packages at this time nfdump-1.6.13.tar.gz and nfsen-1.3.6p1.tar.gz
+# Download latest nfdump and nfsen packages at this time nfdump-1.6.13.tar.gz and nfsen-1.3.6p1.tar.gz
 
 cd /opt/
 wget http://downloads.sourceforge.net/project/nfdump/stable/nfdump-1.6.13/nfdump-1.6.13.tar.gz
 wget http://downloads.sourceforge.net/project/nfsen/stable/nfsen-1.3.6p1/nfsen-1.3.6p1.tar.gz
 
-## Start httpd service
+# Start httpd service
 
 service httpd start
 
-## Install nfdump
+# Install nfdump
  
-## Untar downloaded nfdump package
+# Untar downloaded nfdump package
 # in /opt/
 
 tar -zxvf nfdump-1.6.13.tar.gz
 cd nfdump-1.6.13
 
-## Compile nfdump:
+# Compile nfdump:
 # in /opt/nfdump-1.6.13
 
 ./configure --prefix=/opt/nfdump --enable-nfprofile --enable-nftrack --enable-sflow
 autoreconf
 make && sudo make install
 
-### Install and configure nfsen
+## Install and configure nfsen
 
-## Untar nfsen:
+# Untar nfsen:
 # in /opt/
 
 cd ..
@@ -74,7 +76,7 @@ cd etc
 cp nfsen-dist.conf nfsen.conf
 vi nfsen.conf
 
-## Edit the nfsen.conf file with at least the changes below, make sure all data path variables are set correctly:
+# Edit the nfsen.conf file with at least the changes below, make sure all data path variables are set correctly:
 
 $BASEDIR= "/data/nfsen";
 
@@ -85,7 +87,7 @@ $PREFIX  = '/usr/local/bin'; 'change to' --> '$PREFIX  = '/opt/nfdump/bin';
 $WWWUSER  = "www"; 'change to' --> $WWWUSER  = "apache";
 $WWWGROUP = "www"; 'change to' --> $WWWGROUP = "apache";
 
-## You can change the following if you know all the hosts:
+# You can change the following if you know all the hosts:
 %sources = (
     'router-1'    => { 'port' => '9030', 'col' => '#0000ff', 'type' => 'netflow' },
     'firewall-1'    => { 'port' => '9031', 'col' => '#9093ff', 'type' => 'netflow' },
@@ -97,24 +99,25 @@ $WWWGROUP = "www"; 'change to' --> $WWWGROUP = "apache";
     [ '*', 'flowdoh' ],
 )
 
-## save the changes above changes
+# save the changes above changes
 
 ## We will now run perl installation script to install nfsen (change directory)
 
 cd ..
 ./install.pl etc/nfsen.conf
 
-** Perl to use: [/usr/bin/perl] 	#Press enter to accept default path. You may get Errors since we did not configure any flows at this point.
+** Perl to use: [/usr/bin/perl] 	
+#Press enter to accept default path. You may get Errors since we did not configure any flows at this point.
 
-## Lets now create a startup script for the service
+# Lets now create a startup script for the service
 
 vi /etc/init.d/nfsen
 
 -----------------COPY BELOW TO NEXT LINE INDICATOR------------------------
 #!/bin/bash
-#
-# chkconfig: - 50 50
-# description: nfsen
+#!
+#chkconfig: - 50 50
+#description: nfsen
 
 DAEMON=/data/nfsen/bin/nfsen
 
@@ -141,17 +144,20 @@ esac
 
 exit 0
 -----------------COPY ABOVE TO NEXT LINE INDICATOR------------------------
+
 ##save the changes above changes
 
-## make sure the script is executable
+# make sure the script is executable
 
 chmod +x /etc/init.d/nfsen
 
-## Start nfsen deamon
+# Start nfsen deamon
+
 /etc/init.d/./nfsen start
 
-## use the following to restart nfsen when necessary:
-# /etc/init.d/nfsen restart
+# use the following to restart nfsen when necessary:
+
+/etc/init.d/nfsen restart
 
 ## At this point you should be able to access nfsen at http://127.0.0.1/nfsen/nfsen.php
  
@@ -159,10 +165,10 @@ chmod +x /etc/init.d/nfsen
 ** "Backend version missmatch!" 
 ** This error can be safely ignored.
 
-###    ADDING ADDITIONAL NETFLOW SENDERS:
-## On the nfsen server, add the following to nfsen.conf file:
-## set the color to something you would like: use this site for reference: 
-## https://www.color-hex.com/
+## ADDING ADDITIONAL NETFLOW SENDERS:
+# On the nfsen server, add the following to nfsen.conf file:
+# set the color to something you would like: use this site for reference: 
+# https://www.color-hex.com/
 
 vi /data/nfsen/etc/nfsen.conf
 
@@ -171,7 +177,7 @@ vi /data/nfsen/etc/nfsen.conf
 'LinuxServer'    => { 'port' => '9666', 'col' => '#ff5a00', 'type' => 'netflow' },
 );
 
-## To Rebuild NFSEN after settings changes:
+# To Rebuild NFSEN after settings changes:
 
 cd /data/nfsen/bin/
 ./nfsen reconfig
@@ -204,9 +210,9 @@ cd /data/nfsen/bin/
 
 	ss -nutlp
 
-### INSTALLING PLUGINS:
+## INSTALLING PLUGINS:
 
-## FLOWDOH:
+# FLOWDOH:
 cd /opt/
 sudo wget https://sourceforge.net/projects/flowdoh/files/FlowDoh_1.0.2.tar.gz
 sudo tar -zxvf FlowDoh_1.0.2.tar.gz
