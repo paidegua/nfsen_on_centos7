@@ -8,56 +8,58 @@ vi /etc/selinux/config
 
 !change "SELINUX=enforcing" to --> "SELINUX=disabled"
 
-reboot  	#to apply SELINUX changes
+reboot  	
+(to apply SELINUX changes)
 
-sestatus	#to VERIFY status; it should stay: "SELinux status: disabled"
+sestatus	
+(to VERIFY status; it should stay: "SELinux status: disabled")
 
-!Stop iptables firewall:
+! Stop iptables firewall:
 
 systemctl stop firewalld
 systemctl disable firewalld
 
-!verify:
+! verify:
 
 firewall-cmd --state		#to VERIFY status; it should stay: "not running"
 
 -----START NFSEN APPLICATION SETUP--------
 
-!We will need to install a number of packages for CentOS 7
+! We will need to install a number of packages for CentOS 7
 
 yum install -y httpd php wget gcc make rrdtool-devel rrdtool-perl perl-MailTools perl-Socket6 flex byacc perl-Sys-Syslog perl-Data-Dumper autoconf automake apache php perl-MailTools rrdtool-perl perl-Socket6 perl-Sys-Syslog.x86_64 policycoreutils-python tcpdump
 
 echo "date.timezone = America/Denver" > /etc/php.d/timezone.ini
 yum update -y 
 
-!Create user account and add it to proper group
+! Create user account and add it to proper group
 
 useradd netflow
 usermod -a -G apache netflow
 
-!Create directories which we will specify later in configuration file
+! Create directories which we will specify later in configuration file
 
 mkdir -p /data/nfsen
 mkdir -p /var/www/html/nfsen
 
-!Download latest nfdump and nfsen packages at this time nfdump-1.6.13.tar.gz and nfsen-1.3.6p1.tar.gz
+! Download latest nfdump and nfsen packages at this time nfdump-1.6.13.tar.gz and nfsen-1.3.6p1.tar.gz
 
 cd /opt/
 wget http://downloads.sourceforge.net/project/nfdump/stable/nfdump-1.6.13/nfdump-1.6.13.tar.gz
 wget http://downloads.sourceforge.net/project/nfsen/stable/nfsen-1.3.6p1/nfsen-1.3.6p1.tar.gz
 
-!Start httpd service
+! Start httpd service
 
 service httpd start
 
-!Install nfdump
+! Install nfdump
  
-!Untar downloaded nfdump package in the "/opt/" Directory.
+! Untar downloaded nfdump package in the "/opt/" Directory.
 
 tar -zxvf nfdump-1.6.13.tar.gz
 cd nfdump-1.6.13
 
-!Compile nfdump while in the "/opt/nfdump-1.6.13" directory
+! Compile nfdump while in the "/opt/nfdump-1.6.13" directory
 
 ./configure --prefix=/opt/nfdump --enable-nfprofile --enable-nftrack --enable-sflow
 autoreconf
@@ -65,7 +67,7 @@ make && sudo make install
 
 # Install and configure nfsen
 
-!Untar nfsen in the "/opt/" directory.
+! Untar nfsen in the "/opt/" directory.
 
 cd ..
 tar -zxvf nfsen-1.3.6p1.tar.gz
@@ -74,7 +76,7 @@ cd etc
 cp nfsen-dist.conf nfsen.conf
 vi nfsen.conf
 
-!Edit the nfsen.conf file with at least the changes below, make sure all data path variables are set correctly:
+! Edit the nfsen.conf file with at least the changes below, make sure all data path variables are set correctly:
 
 $BASEDIR= "/data/nfsen";
 
@@ -85,7 +87,7 @@ $PREFIX  = '/usr/local/bin'; 'change to' --> '$PREFIX  = '/opt/nfdump/bin';
 $WWWUSER  = "www"; 'change to' --> $WWWUSER  = "apache";
 $WWWGROUP = "www"; 'change to' --> $WWWGROUP = "apache";
 
-!You can change the following if you know all the hosts:
+! You can change the following if you know all the hosts:
 
 %sources = (
     'router-1'    => { 'port' => '9030', 'col' => '#0000ff', 'type' => 'netflow' },
@@ -98,7 +100,7 @@ $WWWGROUP = "www"; 'change to' --> $WWWGROUP = "apache";
     [ '*', 'flowdoh' ],
 )
 
-!save the changes above changes
+! save the changes above changes
 
 # We will now run perl installation script to install nfsen (change directory)
 
@@ -107,9 +109,9 @@ cd ..
 
 ** Perl to use: [/usr/bin/perl] 
 
-!Press enter to accept default path. You may get Errors since we did not configure any flows at this point.
+! Press enter to accept default path. You may get Errors since we did not configure any flows at this point.
 
-!Lets now create a startup script for the service
+! Lets now create a startup script for the service
 
 vi /etc/init.d/nfsen
 
@@ -145,17 +147,17 @@ esac
 exit 0
 -----------------COPY ABOVE TO NEXT LINE INDICATOR------------------------
 
-!save the changes above changes
+! save the changes above changes
 
-!make sure the script is executable
+! make sure the script is executable
 
 chmod +x /etc/init.d/nfsen
 
-!Start nfsen deamon
+! start nfsen deamon
 
 /etc/init.d/./nfsen start
 
-#use the following to restart nfsen when necessary:
+!use the following to restart nfsen when necessary:
 
 /etc/init.d/nfsen restart
 
@@ -166,9 +168,9 @@ chmod +x /etc/init.d/nfsen
 ** This error can be safely ignored.
 
 # ADDING ADDITIONAL NETFLOW SENDERS:
-!On the nfsen server, add the following to nfsen.conf file:
-!set the color to something you would like: use this site for reference: 
-!https://www.color-hex.com/
+! On the nfsen server, add the following to nfsen.conf file:
+! set the color to something you would like: use this site for reference: 
+! https://www.color-hex.com/
 
 vi /data/nfsen/etc/nfsen.conf
 
@@ -177,7 +179,7 @@ vi /data/nfsen/etc/nfsen.conf
 'LinuxServer'    => { 'port' => '9666', 'col' => '#ff5a00', 'type' => 'netflow' },
 );
 
-#To Rebuild NFSEN after settings changes:
+! To Rebuild NFSEN after settings changes:
 
 cd /data/nfsen/bin/
 ./nfsen reconfig
@@ -185,7 +187,7 @@ cd /data/nfsen/bin/
 /etc/init.d/nfsen restart
 
  
-## TROUBLESHOOTING:
+# TROUBLESHOOTING:
 
 1. Use tcpdump and verify that flows are being received on the specified port.
 	LIST NICs:
@@ -210,7 +212,7 @@ cd /data/nfsen/bin/
 
 	ss -nutlp
 
-## INSTALLING PLUGINS:
+# INSTALLING PLUGINS:
 
 # FLOWDOH:
 cd /opt/
@@ -218,21 +220,21 @@ sudo wget https://sourceforge.net/projects/flowdoh/files/FlowDoh_1.0.2.tar.gz
 sudo tar -zxvf FlowDoh_1.0.2.tar.gz
 
 !Backend: (/data/nfsen/plugins/)
-cd /opt/flowdoh/backend/
-cp -avr flowdoh/ /data/nfsen/plugins/
-cp flowdoh.pm /data/nfsen/plugins/
-cd /data/nfsen/plugins/flowdoh
-cp flowdoh.conf.defaults flowdoh.conf
-cd /data/nfsen/plugins
-chmod 777 flowdoh
-chmod 777 flowdoh.pm
+	cd /opt/flowdoh/backend/
+	cp -avr flowdoh/ /data/nfsen/plugins/
+	cp flowdoh.pm /data/nfsen/plugins/
+	cd /data/nfsen/plugins/flowdoh
+	cp flowdoh.conf.defaults flowdoh.conf
+	cd /data/nfsen/plugins
+	chmod 777 flowdoh
+	chmod 777 flowdoh.pm
 
 !FrontEnd: (/var/www/html/nfsen/plugins/)
-cd /opt/flowdoh/frontend/
-cp flowdoh.php /var/www/html/nfsen/plugins/
-cp -avr flowdoh/ /var/www/html/nfsen/plugins/
-cd /var/www/html/nfsen/plugins
-chmod 777 flowdoh
-chmod 777 flowdoh.php
+	cd /opt/flowdoh/frontend/
+	cp flowdoh.php /var/www/html/nfsen/plugins/
+	cp -avr flowdoh/ /var/www/html/nfsen/plugins/
+	cd /var/www/html/nfsen/plugins
+	chmod 777 flowdoh
+	chmod 777 flowdoh.php
 
 /etc/init.d/nfsen restart
