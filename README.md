@@ -1,6 +1,6 @@
 # How to Install NFSEN on CENTOS 7
 
-This procedure with help you get NFSEN running on CentOS 7. Start with a minimal installation of CentOS 7, update it and then proceed with the below steps.
+This procedure witll help you get NFSEN running on CentOS 7. Start with a minimal installation of CentOS 7, update it and then proceed with the below steps.
 
 ## Start with a basic minimal installation of CentOS 7
 
@@ -45,13 +45,13 @@ yum install -y httpd php wget gcc make rrdtool-devel rrdtool-perl perl-MailTools
 echo "date.timezone = America/Denver" > /etc/php.d/timezone.ini yum update -y
 ```
 
-Create the netflow user account and add it to proper group:
+Create the netflow user account and add it to the apache group:
 
 ```
 useradd netflow usermod -a -G apache netflow
 ```
 
-Create the directories which we will specify later in configuration file:
+Create the directories which we will specify later in the configuration file:
 
 ```
 mkdir -p /data/nfsen 
@@ -72,7 +72,7 @@ Start the httpd service:
 service httpd start
 ```
 
-## Install nfdump, Untar downloaded nfdump package in the "/opt/" Directory.
+## Install nfdump, untar the downloaded nfdump package into the "/opt/" Directory.
 
 ```
 tar -zxvf nfdump-1.6.13.tar.gz cd nfdump-1.6.13
@@ -88,7 +88,7 @@ make && sudo make install
 
 ## Install and configure nfsen
 
-Untar nfsen in the "/opt/" directory.
+Untar nfsen into the "/opt/" directory.
 
 ```
 cd .. 
@@ -99,7 +99,7 @@ cp nfsen-dist.conf nfsen.conf
 vi nfsen.conf
 ```
 
-Edit the nfsen.conf file with at least the changes below, make sure all data path variables are set correctly:
+Edit the nfsen.conf file with at least the changes below. Make sure all data path variables are set correctly: 
 
 ```
 $BASEDIR= "/data/nfsen";
@@ -112,14 +112,20 @@ $WWWUSER = "www"; 'change to' --> $WWWUSER = "apache"; $WWWGROUP = "www"; 'chang
 ```
 
 You can change the following if you know all the hosts:
+Duplicate the 'router-1' line for each different host. Change the Name, Port and Color for each different line.
+
+```
+%sources = ( 
+'router-1' => { 'port' => '9030', 'col' => '#0000ff', 'type' => 'netflow' }, 
+'firewall-1' => { 'port' => '9031', 'col' => '#9093ff', 'type' => 'netflow' }, 
+);
 ```
 
-%sources = ( 'router-1' => { 'port' => '9030', 'col' => '#0000ff', 'type' => 'netflow' }, 'firewall-1' => { 'port' => '9031', 'col' => '#9093ff', 'type' => 'netflow' }, );
-
+```
 @plugins = ( # profile # module # [ '', 'demoplugin' ], [ '', 'flowdoh' ], )
 ```
 
-Save the changes above changes
+Save the above changes
 
 ## We will now run the perl installation script to install nfsen (change directory):
 
@@ -129,9 +135,9 @@ cd .. ./install.pl etc/nfsen.conf
 
 Perl to use: [/usr/bin/perl]
 
-Press enter to accept default path. You may get Errors since we did not configure any flows at this point.
+Press enter to accept the default path. You may get Errors since we did not configure any flows at this point.
 
-Lets now create a startup script for the service
+Let's now create a startup script for the service
 
 ```
 vi /etc/init.d/nfsen
@@ -140,11 +146,31 @@ vi /etc/init.d/nfsen
 Copy the below information into the new configuration file:
 
 ```
-#!/bin/bash #! #chkconfig: - 50 50 #description: nfsen
+#!/bin/bash 
+#! #chkconfig: - 50 50 
+#description: nfsen
 
 DAEMON=/data/nfsen/bin/nfsen
 
-case "$1" in start) $DAEMON start ;; stop) $DAEMON stop ;; status) $DAEMON status ;; restart) $DAEMON stop sleep 1 $DAEMON start ;; *) echo "Usage: $0 {start|stop|status|restart}" exit 1 ;; esac
+case "$1" in 
+start) 
+$DAEMON start 
+;; 
+stop) 
+$DAEMON stop 
+;; status) 
+$DAEMON status 
+;; 
+restart) 
+$DAEMON stop 
+sleep 1 
+$DAEMON start 
+;; 
+*) 
+echo "Usage: $0 {start|stop|status|restart}" 
+exit 1 
+;; 
+esac
 
 exit 0 
 ```
@@ -180,13 +206,17 @@ Backend version missmatch!
 ## Adding additional NETFLOW Senders:
 On the nfsen server, add the following to nfsen.conf file: 
 
-You can set the color to something you would like by finding a HEX color identifyer at the following site: https://www.color-hex.com/
-
 ```
 vi /data/nfsen/etc/nfsen.conf
 ```
+
+You can set the color to something you would like by finding a HEX color identifyer at the following site: https://www.color-hex.com/
+
 ```
-%sources = ( 'CiscoRouter' => { 'port' => '2055', 'col' => '#0000ff', 'type' => 'netflow' }, 'LinuxServer' => { 'port' => '9666', 'col' => '#ff5a00', 'type' => 'netflow' }, );
+%sources = ( 
+'CiscoRouter' => { 'port' => '2055', 'col' => '#0000ff', 'type' => 'netflow' }, 
+'LinuxServer' => { 'port' => '9666', 'col' => '#ff5a00', 'type' => 'netflow' }, 
+);
 ```
 
 ## Rebuild NFSEN after all settings changes:
@@ -200,7 +230,9 @@ cd /data/nfsen/bin/ ./nfsen reconfig
 
 ## Troubleshooting: 
 
-Use tcpdump to verify that flows are being received on the specified port. LIST NICs:
+Use tcpdump to verify that flows are being received on the specified port. 
+
+Run the below to list the device NICs:
 
 ```
 ip link show 
@@ -234,8 +266,8 @@ ss -nutlp
 
 ### FLOWDOH:
 ```
-cd /opt/ sudo wget https://sourceforge.net/projects/flowdoh/files/FlowDoh_1.0.2.tar.gz 
-
+cd /opt/ 
+sudo wget https://sourceforge.net/projects/flowdoh/files/FlowDoh_1.0.2.tar.gz 
 sudo tar -zxvf FlowDoh_1.0.2.tar.gz
 ```
 
@@ -268,3 +300,7 @@ Restart NFSEN to add the FLOWDOH Plugin.
 ```
 /etc/init.d/nfsen restart
 ```
+
+## Authors
+
+* **Lance Jeffery** - *Initial work* - [paidegua](https://github.com/paidegua)
