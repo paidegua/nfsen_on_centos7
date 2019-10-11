@@ -145,10 +145,13 @@ Save the above changes
 cd .. 
 ./install.pl etc/nfsen.conf
 ```
+Press enter to accept the default path. 
 
+```
 Perl to use: [/usr/bin/perl]
+```
 
-Press enter to accept the default path. You may get Errors since we did not configure any flows at this point.
+You may get Errors since we did not configure any flows at this point.
 
 Let's now create a startup script for the service
 
