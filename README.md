@@ -2,7 +2,7 @@
 
 This procedure will help you get NFSEN and NFDUMP running on CentOS 7. Start with a minimal installation of CentOS 7, update it "yum update" to apply all the latest update. Then proceed with the below steps.
 
-## Prepare the OS to allow NFSEN access.
+## Prepare the OS to allow access to NFSEN.
 
 Change "SELINUX=enforcing" to --> "SELINUX=disabled"
 
@@ -75,7 +75,9 @@ Start the httpd service:
 service httpd start
 ```
 
-## Install NFDUMP, untar the downloaded nfdump package into the "/opt/" Directory.
+## Install NFDUMP
+
+Untar the downloaded nfdump package into the "/opt/" Directory.
 
 ```
 tar -zxvf nfdump-1.6.13.tar.gz 
@@ -117,40 +119,38 @@ $WWWUSER = "www"; 'change to' --> $WWWUSER = "apache"; $WWWGROUP = "www"; 'chang
 ```
 
 You can change the following if you know all the hosts:
-Duplicate the 'router-1' line for each different host. 
-Change the Name, Port and Color for each different line.
+Duplicate the 'router-1' line for each different host. Change the Name, Port and Color for each different line.
 Comment out lines by using "#" at the beginning of the line
 
 ```
 %sources = ( 
-#'router-1' => { 'port' => '9030', 'col' => '#0000ff', 'type' => 'netflow' }, 
+'router-1' => { 'port' => '9030', 'col' => '#0000ff', 'type' => 'netflow' }, 
 'firewall-1' => { 'port' => '9031', 'col' => '#9093ff', 'type' => 'netflow' }, 
 );
 ```
 
-The next line we will add the "flowdoh" plugin which we will install and configure after NFSEN and NFDUMP are up and running
+The next section we will add the "flowdoh" plugin which we will install and configure after NFSEN and NFDUMP are up and running.
 
 ```
 @plugins = ( # profile # module 
-		         # [ '', 'demoplugin' ], 
-			        [ '', 'flowdoh' ], )
+		     # [ '', 'demoplugin' ], 
+			 [ '', 'flowdoh' ], )
 ```
 
 Save the above changes
 
-## We will now run the perl installation script to install nfsen (change directory):
+## Run the perl installation script to install nfsen:
 
 ```
 cd .. 
 ./install.pl etc/nfsen.conf
 ```
-Press enter at the below prompt to accept the default path. 
 
-**Perl to use: [/usr/bin/perl]**
+Perl to use: [/usr/bin/perl]
 
-You may get Errors since we did not configure any flows at this point.
+Press enter to accept the default path. You may get Errors since we did not configure any flows at this point.
 
-## Now create a startup script for the service
+Let's now create a startup script for the service
 
 ```
 vi /etc/init.d/nfsen
@@ -202,55 +202,21 @@ Start the nfsen deamon:
 /etc/init.d/./nfsen start
 ```
 
-*Use the following to restart nfsen when necessary:*
+Use the following to restart nfsen when necessary:
 
 ```
 /etc/init.d/nfsen restart
 ```
 
-## At this point you should be able to access nfsen at http://127.0.0.1/nfsen/nfsen.php 
+## At this point you should be able to access NFSEN
+
+Go to http://127.0.0.1/nfsen/nfsen.php 
 (in place of 127.0.0.1" use your server IP.)
 
-### You can ignore the following message when you connect to your NfSen URL @ http://x.x.x.x/nfsen/nfsen.php 
+### Ignore the following message when you connect:
 
 ```
 Backend version missmatch!
-```
-
-## Troubleshooting: 
-
-Use tcpdump to verify that flows are being received on the specified port. 
-
-Run the below to list the device NICs:
-
-```
-ip link show 
-
-tcpdump -i <NIC_IDENTIFIER> port <TCP_PORT_DEFINED_IN_SETUP>
-```
-
-Make sure that you see traffic on this port from required host.
-
-With nfdump you can read flow collection files from command line
-
-```
-cd /data/nfsen/profiles-data/live/ /opt/nfdump/bin/nfdump -r "<your_file_name>"
-```
-
-## Make sure that your system date and php dates are set correctly. 
-
-You may need to edit /etc/php.ini and adjust your (date.timezone = "US/Eastern") settings
-
-## Check running fcapd processes:
-
-```
-ps axo command | grep '[n]fcapd'
-```
-
-Check which ports nfcapd is listening on:
-
-```
-ss -nutlp
 ```
 
 ## Installing Plugins:
@@ -295,7 +261,47 @@ Restart NFSEN to add the FLOWDOH Plugin.
 /etc/init.d/nfsen restart
 ```
 
-## Do the following When Adding additional NETFLOW Senders:
+# INSTALLATION COMPLETE
+
+The below steps will help in troubleshooting and maintaning your installation.
+
+## Troubleshooting: 
+
+Use tcpdump to verify that flows are being received on the specified port. 
+
+Run the below to list the device NICs:
+
+```
+ip link show 
+
+tcpdump -i <NIC_IDENTIFIER> port <TCP_PORT_DEFINED_IN_SETUP>
+```
+
+Make sure that you see traffic on this port from required host.
+
+With nfdump you can read flow collection files from command line
+
+```
+cd /data/nfsen/profiles-data/live/ /opt/nfdump/bin/nfdump -r "<your_file_name>"
+```
+
+## Make sure that your system date and php dates are set correctly. 
+
+You may need to edit /etc/php.ini and adjust your (date.timezone = "US/Eastern") settings
+
+## Check running fcapd processes:
+
+```
+ps axo command | grep '[n]fcapd'
+```
+
+Check which ports nfcapd is listening on:
+
+```
+ss -nutlp
+```
+
+## Do the following when adding additional NETFLOW Senders:
 
 On the nfsen server, edit the nfsen.conf file to add NetFlow sources: 
 
@@ -321,7 +327,7 @@ cd /data/nfsen/bin/
 
 /etc/init.d/nfsen restart
 ```
-
+ 
 ## Install Note: 
 
 It takes around 5 minutes (depending on your server) to start showing data on the web pages. 
