@@ -340,3 +340,5 @@ If data is being received just wait it will start to populate the graphs.
 ## Authors
 
 * **Initial work completed by** - [paidegua](https://github.com/paidegua)
+
+* If I helped in anyway consider - [Donating a Beer](https://www.paypal.me/LanceJeffery)
