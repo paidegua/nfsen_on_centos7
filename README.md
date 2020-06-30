@@ -44,7 +44,9 @@ yum install -y httpd php wget gcc make rrdtool-devel rrdtool-perl perl-MailTools
 
 yum install -y autoconf automake apache php perl-MailTools rrdtool-perl perl-Socket6 perl-Sys-Syslog.x86_64 policycoreutils-python tcpdump
 
-echo "date.timezone = America/Denver" > /etc/php.d/timezone.ini yum update -y
+echo "date.timezone = America/Denver" > /etc/php.d/timezone.ini 
+
+yum update -y
 ```
 
 Create the netflow user account and add it to the apache group:
